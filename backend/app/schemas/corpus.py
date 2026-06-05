@@ -9,6 +9,12 @@ class CorpusTemplateCreate(BaseModel):
     description: str | None = None
 
 
+class CorpusTemplateUpdate(BaseModel):
+    name: str | None = None
+    template_content: str | None = None
+    description: str | None = None
+
+
 class CorpusTemplateOut(BaseModel):
     model_config = {"from_attributes": True}
 
@@ -24,7 +30,7 @@ class CorpusGenerateRequest(BaseModel):
     template_id: int
     group_id: int
     task_id: int | None = None
-    image_ids: list[int] | None = None
+    label_ids: list[int] | None = None
 
 
 class CorpusRecordOut(BaseModel):
@@ -46,6 +52,7 @@ class CorpusRecordUpdate(BaseModel):
 
 
 class CorpusExportRequest(BaseModel):
+    output_dir: str
     group_id: int | None = None
+    template_id: int | None = None
     status: str | None = None
-    format: str = "jsonl"
