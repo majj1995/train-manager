@@ -23,3 +23,4 @@ class Image(Base):
     image_labels: Mapped[list["ImageLabel"]] = relationship(back_populates="image", cascade="all, delete-orphan")
     preprocess_results: Mapped[list["PreprocessResult"]] = relationship(back_populates="image", cascade="all, delete-orphan")
     corpus_records: Mapped[list["CorpusRecord"]] = relationship(back_populates="image", cascade="all, delete-orphan")
+    source_directories: Mapped[list["ImageSourceDirectory"]] = relationship(back_populates="image", cascade="all, delete-orphan")
