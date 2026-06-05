@@ -13,7 +13,7 @@ from app.services.label_service import (
     batch_add_labels, batch_remove_labels,
 )
 
-router = APIRouter(prefix="/labels", tags=["labels"])
+router = APIRouter(prefix="/api/labels", tags=["labels"])
 
 
 @router.post("/groups", response_model=LabelGroupOut)

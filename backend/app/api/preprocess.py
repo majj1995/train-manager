@@ -14,7 +14,7 @@ from app.services.preprocess_service import (
     list_results, update_result, confirm_results,
 )
 
-router = APIRouter(prefix="/preprocess", tags=["preprocess"])
+router = APIRouter(prefix="/api/preprocess", tags=["preprocess"])
 
 
 @router.post("/scripts", response_model=PreprocessScriptOut)

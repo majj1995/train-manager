@@ -7,7 +7,7 @@ from app.schemas.image import ImageImport, ImageImportResult, ImageOut
 from app.schemas.label import LabelOut
 from app.services.image_service import import_images, list_images, get_image_detail
 
-router = APIRouter(prefix="/images", tags=["images"])
+router = APIRouter(prefix="/api/images", tags=["images"])
 
 
 @router.post("/import", response_model=ImageImportResult)

@@ -13,7 +13,7 @@ from app.services.corpus_service import (
     generate_corpus, list_records, update_record, confirm_records, export_corpus,
 )
 
-router = APIRouter(prefix="/corpus", tags=["corpus"])
+router = APIRouter(prefix="/api/corpus", tags=["corpus"])
 
 
 @router.post("/templates", response_model=CorpusTemplateOut)
