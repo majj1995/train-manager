@@ -7,6 +7,7 @@ from app.core.database import engine, Base
 from app.api.images import router as images_router
 from app.api.labels import router as labels_router
 from app.api.auth import router as auth_router
+from app.api.preprocess import router as preprocess_router
 
 app = FastAPI(title="Auto-Train Data Management", version="0.1.0")
 
@@ -21,6 +22,7 @@ app.add_middleware(
 app.include_router(images_router)
 app.include_router(labels_router)
 app.include_router(auth_router)
+app.include_router(preprocess_router)
 
 IMAGE_BASE_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/images", StaticFiles(directory=str(IMAGE_BASE_DIR)), name="images")
