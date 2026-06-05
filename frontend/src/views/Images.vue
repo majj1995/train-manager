@@ -1,6 +1,17 @@
 <template>
   <el-row :gutter="20">
     <el-col :span="4">
+      <el-card header="数据源目录" style="margin-bottom: 12px">
+        <el-button type="primary" size="small" @click="showAddDir = true" style="margin-bottom: 8px; width: 100%">添加目录</el-button>
+        <div v-for="d in directories" :key="d.id" style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center">
+          <div>
+            <span style="font-size: 13px">{{ d.path }}</span>
+            <el-tag size="small" style="margin-left: 4px">{{ d.image_count }}张</el-tag>
+          </div>
+          <el-button size="small" type="danger" @click="doDeleteDir(d)">删除</el-button>
+        </div>
+      </el-card>
+
       <el-card>
         <template #header>
           <div style="display:flex;justify-content:space-between;align-items:center">
@@ -108,13 +119,29 @@
       <el-button type="primary" @click="handleBatchAdd">添加</el-button>
     </template>
   </el-dialog>
+
+  <el-dialog v-model="showAddDir" title="添加数据源目录" width="400px">
+    <el-form>
+      <el-form-item label="目录路径">
+        <el-input v-model="newDirPath" placeholder="/path/to/images" />
+      </el-form-item>
+      <el-form-item label="递归扫描子目录">
+        <el-switch v-model="newDirRecursive" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="showAddDir = false">取消</el-button>
+      <el-button type="primary" @click="doAddDir">添加</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { importImages, listImages } from '../api/images'
 import { listGroups, createGroup, listLabelsByGroup, batchAddLabels, batchRemoveLabels } from '../api/labels'
+import { addDirectory, listDirectories, deleteDirectory } from '../api/directories'
 
 const groups = ref([])
 const groupTree = ref([])
@@ -140,6 +167,11 @@ const batchAddDialogVisible = ref(false)
 const batchAddGroupId = ref(null)
 const batchAddLabelIds = ref([])
 const batchLabels = ref([])
+
+const directories = ref([])
+const showAddDir = ref(false)
+const newDirPath = ref('')
+const newDirRecursive = ref(false)
 
 const imageUrl = (row) => {
   const parts = row.file_path.split('/')
@@ -244,7 +276,31 @@ const removeTag = async (row, tag) => {
   loadImages()
 }
 
+const loadDirectories = async () => {
+  const res = await listDirectories()
+  directories.value = res.data
+}
+
+const doAddDir = async () => {
+  await addDirectory({ path: newDirPath.value, recursive: newDirRecursive.value })
+  ElMessage.success('目录添加成功')
+  showAddDir.value = false
+  loadDirectories()
+  loadImages()
+}
+
+const doDeleteDir = async (d) => {
+  try {
+    await ElMessageBox.confirm(`删除目录 ${d.path}？将删除仅属于该目录的图片。`, '确认删除')
+  } catch { return }
+  const res = await deleteDirectory(d.id)
+  ElMessage.success(`删除 ${res.data.deleted_images_count} 张图片，保留 ${res.data.kept_images_count} 张图片`)
+  loadDirectories()
+  loadImages()
+}
+
 onMounted(() => {
+  loadDirectories()
   loadGroups()
   loadImages()
 })
