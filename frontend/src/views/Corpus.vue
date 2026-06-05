@@ -212,7 +212,7 @@ const recordImageUrl = (row) => {
   if (!row.image_path) return ''
   const parts = row.image_path.split('/')
   const filename = parts[parts.length - 1]
-  return `http://localhost:8000/images/${filename}`
+  return `/images/${filename}`
 }
 
 const loadGroups = async () => {

@@ -176,7 +176,7 @@ const newDirRecursive = ref(false)
 const imageUrl = (row) => {
   const parts = row.file_path.split('/')
   const filename = parts[parts.length - 1]
-  return `http://localhost:8000/images/${filename}`
+  return `/images/${filename}`
 }
 
 const loadGroups = async () => {

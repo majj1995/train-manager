@@ -30,7 +30,7 @@ const emit = defineEmits(['saved'])
 
 const visible = ref(false)
 const selectedLabelIds = ref([])
-const imageUrl = computed(() => props.image ? `http://localhost:8000/images/${props.image.file_path.split('/').pop()}` : '')
+const imageUrl = computed(() => props.image ? `/images/${props.image.file_path.split('/').pop()}` : '')
 
 watch(() => props.image, (img) => {
   if (img) {
