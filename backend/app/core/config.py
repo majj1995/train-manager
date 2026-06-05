@@ -6,7 +6,7 @@ IMAGE_BASE_DIR = Path(os.getenv("IMAGE_BASE_DIR", str(BASE_DIR / "data" / "image
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "mysql+pymysql://root:password@localhost:3306/auto_train"
+    "mysql+pymysql://ppsma:D%40%23evc2134@localhost:3306/auto_train"
 )
 
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
