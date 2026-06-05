@@ -26,7 +26,7 @@ const gridContainer = ref(null)
 const scrollTop = ref(0)
 const containerHeight = ref(800)
 
-const imageUrl = (filePath) => `/images/${filePath.split('/').pop()}`
+const imageUrl = (filePath) => `${import.meta.env.VITE_API_BASE_URL || ''}/images/${filePath.split('/').pop()}`
 
 const rowHeight = computed(() => props.itemHeight + props.gap)
 const totalRows = computed(() => Math.ceil(props.images.length / props.columns))

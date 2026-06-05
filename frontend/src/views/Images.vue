@@ -176,7 +176,7 @@ const newDirRecursive = ref(false)
 const imageUrl = (row) => {
   const parts = row.file_path.split('/')
   const filename = parts[parts.length - 1]
-  return `/images/${filename}`
+  return `${import.meta.env.VITE_API_BASE_URL || ''}/images/${filename}`
 }
 
 const loadGroups = async () => {

@@ -30,7 +30,7 @@ const emit = defineEmits(['saved'])
 
 const visible = ref(false)
 const selectedLabelIds = ref([])
-const imageUrl = computed(() => props.image ? `/images/${props.image.file_path.split('/').pop()}` : '')
+const imageUrl = computed(() => props.image ? `${import.meta.env.VITE_API_BASE_URL || ''}/images/${props.image.file_path.split('/').pop()}` : '')
 
 watch(() => props.image, (img) => {
   if (img) {
