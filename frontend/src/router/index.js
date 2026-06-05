@@ -1,15 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Images from '../views/Images.vue'
-import Labeling from '../views/Labeling.vue'
-import Preprocess from '../views/Preprocess.vue'
-import Corpus from '../views/Corpus.vue'
 
 const routes = [
   { path: '/', redirect: '/images' },
-  { path: '/images', component: Images },
-  { path: '/labeling', component: Labeling },
-  { path: '/preprocess', component: Preprocess },
-  { path: '/corpus', component: Corpus },
+  { path: '/images', name: 'Images', component: () => import('../views/Images.vue') },
+  { path: '/labeling', name: 'Labeling', component: () => import('../views/Labeling.vue') },
+  { path: '/preprocess', name: 'Preprocess', component: () => import('../views/Preprocess.vue') },
+  { path: '/corpus', name: 'Corpus', component: () => import('../views/Corpus.vue') },
 ]
 
 const router = createRouter({

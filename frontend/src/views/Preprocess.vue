@@ -1,6 +1,5 @@
 <template>
-  <div>
-    <h2>预处理</h2>
-    <p>待实现</p>
-  </div>
+  <el-card header="预处理">
+    <p>Preprocess page - to be implemented</p>
+  </el-card>
 </template>

@@ -1,11 +1,11 @@
-import http from './index'
+import api from './index'
 
-export const listScripts = (params) => http.get('/api/preprocess/scripts', { params })
-export const createScript = (data) => http.post('/api/preprocess/scripts', data)
-export const deleteScript = (id) => http.delete(`/api/preprocess/scripts/${id}`)
-export const listTasks = (params) => http.get('/api/preprocess/tasks', { params })
-export const createTask = (data) => http.post('/api/preprocess/tasks', data)
-export const getTask = (id) => http.get(`/api/preprocess/tasks/${id}`)
-export const getTaskResults = (taskId, params) => http.get(`/api/preprocess/tasks/${taskId}/results`, { params })
-export const updateResult = (taskId, resultId, data) => http.put(`/api/preprocess/tasks/${taskId}/results/${resultId}`, data)
-export const confirmResults = (taskId, data) => http.post(`/api/preprocess/tasks/${taskId}/results/confirm`, data)
+export const listScripts = () => api.get('/api/preprocess/scripts')
+export const createScript = (data) => api.post('/api/preprocess/scripts', data)
+export const deleteScript = (id) => api.delete(`/api/preprocess/scripts/${id}`)
+export const listTasks = () => api.get('/api/preprocess/tasks')
+export const createTask = (data) => api.post('/api/preprocess/tasks', data)
+export const getTask = (id) => api.get(`/api/preprocess/tasks/${id}`)
+export const getTaskResults = (taskId, params) => api.get(`/api/preprocess/tasks/${taskId}/results`, { params })
+export const updateResult = (id, data) => api.put(`/api/preprocess/results/${id}`, data)
+export const confirmResults = (data) => api.post('/api/preprocess/results/confirm', data)

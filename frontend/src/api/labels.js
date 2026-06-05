@@ -1,10 +1,10 @@
-import http from './index'
+import api from './index'
 
-export const listGroups = (params) => http.get('/api/labels/groups', { params })
-export const createGroup = (data) => http.post('/api/labels/groups', data)
-export const deleteGroup = (id) => http.delete(`/api/labels/groups/${id}`)
-export const listLabelsByGroup = (groupId, params) => http.get(`/api/labels/groups/${groupId}/labels`, { params })
-export const createLabel = (groupId, data) => http.post(`/api/labels/groups/${groupId}/labels`, data)
-export const deleteLabel = (groupId, labelId) => http.delete(`/api/labels/groups/${groupId}/labels/${labelId}`)
-export const batchAddLabels = (groupId, data) => http.post(`/api/labels/groups/${groupId}/labels/batch`, data)
-export const batchRemoveLabels = (groupId, data) => http.post(`/api/labels/groups/${groupId}/labels/batch-remove`, data)
+export const listGroups = () => api.get('/api/labels/groups')
+export const createGroup = (data) => api.post('/api/labels/groups', data)
+export const deleteGroup = (id) => api.delete(`/api/labels/groups/${id}`)
+export const listLabelsByGroup = (groupId) => api.get(`/api/labels/groups/${groupId}/labels`)
+export const createLabel = (groupId, data) => api.post(`/api/labels/groups/${groupId}/labels`, data)
+export const deleteLabel = (id) => api.delete(`/api/labels/${id}`)
+export const batchAddLabels = (data) => api.post('/api/labels/batch-add', data)
+export const batchRemoveLabels = (data) => api.post('/api/labels/batch-remove', data)

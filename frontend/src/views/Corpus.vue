@@ -1,6 +1,5 @@
 <template>
-  <div>
-    <h2>语料生成</h2>
-    <p>待实现</p>
-  </div>
+  <el-card header="语料生成">
+    <p>Corpus page - to be implemented</p>
+  </el-card>
 </template>

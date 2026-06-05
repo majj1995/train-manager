@@ -1,5 +1,5 @@
-import http from './index'
+import api from './index'
 
-export const importImages = (data) => http.post('/api/images/import', data)
-export const listImages = (params) => http.get('/api/images', { params })
-export const getImage = (id) => http.get(`/api/images/${id}`)
+export const importImages = (directory, recursive = true) => api.post('/api/images/import', { directory, recursive })
+export const listImages = (params) => api.get('/api/images', { params })
+export const getImage = (id) => api.get(`/api/images/${id}`)
