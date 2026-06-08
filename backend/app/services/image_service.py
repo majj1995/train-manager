@@ -4,6 +4,7 @@ from pathlib import Path
 from PIL import Image as PILImage
 from sqlalchemy.orm import Session, joinedload
 
+from app.core.database import SessionLocal
 from app.models.image import Image
 from app.models.label import ImageLabel, Label
 from app.schemas.image import ImageImportResult
@@ -33,7 +34,7 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tiff", "
 
 
 def import_images(directory: str, recursive: bool = False) -> ImageImportResult:
-    db = Session()
+    db = SessionLocal()
     try:
         source_dir = Path(directory)
         if not source_dir.is_dir():
