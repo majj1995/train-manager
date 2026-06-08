@@ -46,7 +46,7 @@
           <el-table-column type="selection" width="50" />
           <el-table-column label="缩略图" width="100">
             <template #default="{ row }">
-              <el-image :src="imageUrl(row)" style="width:80px;height:80px" fit="cover" :preview-src-list="[imageUrl(row)]" />
+              <el-image :src="imageUrl(row)" style="width:80px;height:80px" fit="cover" :preview-src-list="[imageUrl(row)]" :z-index="9999" />
             </template>
           </el-table-column>
           <el-table-column prop="id" label="ID" width="80" />
