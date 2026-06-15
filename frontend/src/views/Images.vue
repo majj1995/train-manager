@@ -33,7 +33,6 @@
       <el-card>
         <template #header>
           <div style="display:flex;gap:12px;align-items:center">
-            <el-button type="primary" @click="importDialogVisible = true">导入图片</el-button>
             <el-button :disabled="selectedImages.length === 0" @click="batchAddDialogVisible = true">批量添加标签</el-button>
             <el-button :disabled="selectedImages.length === 0" @click="handleBatchRemove">批量移除标签</el-button>
             <el-select v-model="filterGroupId" placeholder="按标签分组筛选" clearable style="width:200px" @change="loadImages">
@@ -70,21 +69,6 @@
       </el-card>
     </el-col>
   </el-row>
-
-  <el-dialog v-model="importDialogVisible" title="导入图片" width="400px">
-    <el-form label-width="80px">
-      <el-form-item label="目录路径">
-        <el-input v-model="importDir" placeholder="本地目录路径" />
-      </el-form-item>
-      <el-form-item label="递归扫描">
-        <el-switch v-model="importRecursive" />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <el-button @click="importDialogVisible = false">取消</el-button>
-      <el-button type="primary" :loading="importing" @click="handleImport">导入</el-button>
-    </template>
-  </el-dialog>
 
   <el-dialog v-model="groupDialogVisible" title="新建标签分组" width="400px">
     <el-form label-width="80px">
@@ -137,9 +121,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { importImages, listImages } from '../api/images'
+import { listImages } from '../api/images'
 import { listGroups, createGroup, listLabelsByGroup, batchAddLabels, batchRemoveLabels } from '../api/labels'
 import { addDirectory, listDirectories, deleteDirectory } from '../api/directories'
 
@@ -153,11 +137,6 @@ const pageSize = ref(20)
 const total = ref(0)
 const filterGroupId = ref(null)
 const currentGroupId = ref(null)
-
-const importDialogVisible = ref(false)
-const importDir = ref('')
-const importRecursive = ref(true)
-const importing = ref(false)
 
 const groupDialogVisible = ref(false)
 const newGroupName = ref('')
@@ -218,21 +197,6 @@ const loadImages = async () => {
 
 const onSelectionChange = (val) => {
   selectedImages.value = val
-}
-
-const handleImport = async () => {
-  importing.value = true
-  try {
-    await importImages(importDir.value, importRecursive.value)
-    ElMessage.success('导入成功')
-    importDialogVisible.value = false
-    importDir.value = ''
-    loadImages()
-  } catch (e) {
-    ElMessage.error('导入失败: ' + (e.response?.data?.detail || e.message))
-  } finally {
-    importing.value = false
-  }
 }
 
 const handleCreateGroup = async () => {
