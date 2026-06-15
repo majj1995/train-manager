@@ -201,7 +201,6 @@ const filterByDirectory = (d) => {
   filterGroupId.value = null
   loadImages()
 }
-}
 
 const onSelectionChange = (val) => {
   selectedImages.value = val
