@@ -3,12 +3,12 @@
     <el-col :span="4">
       <el-card header="数据源目录" style="margin-bottom: 12px">
         <el-button type="primary" size="small" @click="showAddDir = true" style="margin-bottom: 8px; width: 100%">添加目录</el-button>
-        <div v-for="d in directories" :key="d.id" style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center">
-          <div>
-            <span style="font-size: 13px">{{ d.path }}</span>
+        <div v-for="d in directories" :key="d.id" style="margin-bottom: 8px; cursor: pointer" @click="filterByDirectory(d)">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <span style="font-size: 13px" :class="{ active: filterDirectoryId === d.id }">{{ d.path }}</span>
             <el-tag size="small" style="margin-left: 4px">{{ d.image_count }}张</el-tag>
           </div>
-          <el-button size="small" type="danger" @click="doDeleteDir(d)">删除</el-button>
+          <el-button size="small" type="danger" @click.stop="doDeleteDir(d)">删除</el-button>
         </div>
       </el-card>
 
@@ -137,6 +137,7 @@ const pageSize = ref(20)
 const total = ref(0)
 const filterGroupId = ref(null)
 const currentGroupId = ref(null)
+const filterDirectoryId = ref(null)
 
 const groupDialogVisible = ref(false)
 const newGroupName = ref('')
@@ -187,12 +188,19 @@ const loadImages = async () => {
   try {
     const params = { page: page.value, page_size: pageSize.value }
     if (filterGroupId.value) params.group_id = filterGroupId.value
+    if (filterDirectoryId.value) params.directory_id = filterDirectoryId.value
     const res = await listImages(params)
     images.value = res.data.items || res.data
     total.value = res.data.total || images.value.length
   } finally {
-    loading.value = false
-  }
+    loading.value = false }
+}
+
+const filterByDirectory = (d) => {
+  filterDirectoryId.value = d.id
+  filterGroupId.value = null
+  loadImages()
+}
 }
 
 const onSelectionChange = (val) => {

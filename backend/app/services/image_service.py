@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import SessionLocal
 from app.models.image import Image
+from app.core.database import SessionLocal
 from app.models.label import ImageLabel, Label
+from app.models.directory import ImageSourceDirectory
 from app.schemas.image import ImageImportResult
 
 
@@ -99,6 +101,7 @@ def list_images(
     page_size: int = 20,
     group_id: int | None = None,
     label_id: int | None = None,
+    directory_id: int | None = None,
 ) -> tuple[list[Image], int]:
     query = db.query(Image)
 
@@ -111,6 +114,11 @@ def list_images(
         query = query.join(ImageLabel, Image.id == ImageLabel.image_id).join(
             Label, ImageLabel.label_id == Label.id
         ).filter(Label.group_id == group_id)
+
+    if directory_id is not None:
+        query = query.join(ImageSourceDirectory, Image.id == ImageSourceDirectory.image_id).filter(
+            ImageSourceDirectory.directory_id == directory_id
+        )
 
     total = query.count()
     offset = (page - 1) * page_size

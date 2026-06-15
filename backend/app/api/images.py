@@ -21,9 +21,10 @@ def api_list_images(
     page_size: int = Query(20, ge=1, le=100),
     group_id: int | None = Query(None),
     label_id: int | None = Query(None),
+    directory_id: int | None = Query(None),
     db: Session = Depends(get_db),
 ):
-    images, total = list_images(db, page, page_size, group_id, label_id)
+    images, total = list_images(db, page, page_size, group_id, label_id, directory_id)
     return PaginatedResponse(total=total, page=page, page_size=page_size, items=images)
 
 
