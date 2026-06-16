@@ -117,6 +117,10 @@ bash frontend/run.sh       # 前端 (端口 5173)
 - ORM: SQLAlchemy 2.0 mapped_column + Mapped 类型注解风格
 - Schema: Pydantic BaseModel + from_attributes=True on output schemas
 
+## 开发流程规范
+
+- **每次完成功能点修改后自动提交并推送远程仓库**，无需用户额外要求。提交信息简洁描述改动内容。
+
 ## 设计文档位置
 
 ```
