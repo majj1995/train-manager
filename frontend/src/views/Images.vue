@@ -84,8 +84,8 @@
     </template>
   </el-dialog>
 
-  <el-dialog v-model="previewVisible" :show-close="true" width="auto" @close="previewVisible = false">
-    <img :src="previewImageUrl" style="max-width:90vw;max-height:80vh;display:block;margin:auto" />
+  <el-dialog v-model="previewVisible" width="auto" :show-close="true" align-center class="preview-dialog" @close="previewVisible = false">
+    <img :src="previewImageUrl" style="max-width:90vw;max-height:80vh;display:block" />
   </el-dialog>
 
   <el-dialog v-model="groupDialogVisible" title="新建标签分组" width="400px">
