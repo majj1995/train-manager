@@ -2,6 +2,10 @@ body {
   margin: 0;
 }
 
-.el-image-viewer__wrapper {
+.el-table {
+  position: static !important;
+}
+
+.el-overlay {
   z-index: 99999 !important;
 }
