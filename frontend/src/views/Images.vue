@@ -47,7 +47,7 @@
           <el-table-column type="selection" width="50" />
           <el-table-column label="缩略图" width="100">
             <template #default="{ row }">
-              <el-image :src="imageUrl(row)" style="width:80px;height:80px" fit="cover" :preview-src-list="[imageUrl(row)]" />
+              <el-image :src="imageUrl(row)" style="width:80px;height:80px;cursor:pointer" fit="cover" @click="previewImage(row)" />
             </template>
           </el-table-column>
           <el-table-column prop="id" label="ID" width="80" />
@@ -82,6 +82,10 @@
       <el-button @click="deleteByPathDialogVisible = false">取消</el-button>
       <el-button type="danger" @click="handleDeleteByPath">删除</el-button>
     </template>
+  </el-dialog>
+
+  <el-dialog v-model="previewVisible" :show-close="true" width="auto" @close="previewVisible = false">
+    <img :src="previewImageUrl" style="max-width:90vw;max-height:80vh;display:block;margin:auto" />
   </el-dialog>
 
   <el-dialog v-model="groupDialogVisible" title="新建标签分组" width="400px">
@@ -170,10 +174,18 @@ const newDirRecursive = ref(false)
 const deleteByPathDialogVisible = ref(false)
 const deletePathPrefix = ref('')
 
+const previewVisible = ref(false)
+const previewImageUrl = ref('')
+
 const imageUrl = (row) => {
   const parts = row.file_path.split('/')
   const filename = parts[parts.length - 1]
   return `${import.meta.env.VITE_API_BASE_URL || ''}/images/${filename}`
+}
+
+const previewImage = (row) => {
+  previewImageUrl.value = imageUrl(row)
+  previewVisible.value = true
 }
 
 const loadGroups = async () => {
