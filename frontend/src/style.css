@@ -1,3 +1,7 @@
 body {
   margin: 0;
 }
+
+.el-image-viewer__wrapper {
+  z-index: 99999 !important;
+}

@@ -33,3 +33,15 @@ class ImageImportResult(BaseModel):
     skipped_count: int
     failed_count: int
     failed_paths: list[str] = []
+
+
+class ImageDeleteByIds(BaseModel):
+    image_ids: list[int]
+
+
+class ImageDeleteByPath(BaseModel):
+    path_prefix: str
+
+
+class ImageDeleteResult(BaseModel):
+    deleted_count: int

@@ -126,6 +126,21 @@ def list_images(
     return images, total
 
 
+def delete_images_by_ids(db: Session, image_ids: list[int]) -> int:
+    for image_id in image_ids:
+        image = db.query(Image).filter(Image.id == image_id).first()
+        if image:
+            db.delete(image)
+    db.commit()
+    return len(image_ids)
+
+
+def delete_images_by_path_prefix(db: Session, path_prefix: str) -> int:
+    count = db.query(Image).filter(Image.file_path.like(f"{path_prefix}%")).delete()
+    db.commit()
+    return count
+
+
 def get_image_detail(db: Session, image_id: int) -> Image | None:
     return db.query(Image).options(
         joinedload(Image.image_labels).joinedload(ImageLabel.label).joinedload(Label.group)

@@ -35,6 +35,8 @@
           <div style="display:flex;gap:12px;align-items:center">
             <el-button :disabled="selectedImages.length === 0" @click="batchAddDialogVisible = true">批量添加标签</el-button>
             <el-button :disabled="selectedImages.length === 0" @click="handleBatchRemove">批量移除标签</el-button>
+            <el-button :disabled="selectedImages.length === 0" type="danger" @click="handleDeleteSelected">删除选中图片</el-button>
+            <el-button type="danger" @click="deleteByPathDialogVisible = true">按路径删除</el-button>
             <el-select v-model="filterGroupId" placeholder="按标签分组筛选" clearable style="width:200px" @change="loadImages">
               <el-option v-for="g in groups" :key="g.id" :label="g.name" :value="g.id" />
             </el-select>
@@ -45,7 +47,7 @@
           <el-table-column type="selection" width="50" />
           <el-table-column label="缩略图" width="100">
             <template #default="{ row }">
-              <el-image :src="imageUrl(row)" style="width:80px;height:80px" fit="cover" :preview-src-list="[imageUrl(row)]" :z-index="9999" />
+              <el-image :src="imageUrl(row)" style="width:80px;height:80px" fit="cover" :preview-src-list="[imageUrl(row)]" />
             </template>
           </el-table-column>
           <el-table-column prop="id" label="ID" width="80" />
@@ -69,6 +71,18 @@
       </el-card>
     </el-col>
   </el-row>
+
+  <el-dialog v-model="deleteByPathDialogVisible" title="按路径删除图片" width="400px">
+    <el-form label-width="80px">
+      <el-form-item label="路径前缀">
+        <el-input v-model="deletePathPrefix" placeholder="/path/to/images" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="deleteByPathDialogVisible = false">取消</el-button>
+      <el-button type="danger" @click="handleDeleteByPath">删除</el-button>
+    </template>
+  </el-dialog>
 
   <el-dialog v-model="groupDialogVisible" title="新建标签分组" width="400px">
     <el-form label-width="80px">
@@ -123,7 +137,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listImages } from '../api/images'
+import { listImages, deleteImagesByIds, deleteImagesByPath } from '../api/images'
 import { listGroups, createGroup, listLabelsByGroup, batchAddLabels, batchRemoveLabels } from '../api/labels'
 import { addDirectory, listDirectories, deleteDirectory } from '../api/directories'
 
@@ -152,6 +166,9 @@ const directories = ref([])
 const showAddDir = ref(false)
 const newDirPath = ref('')
 const newDirRecursive = ref(false)
+
+const deleteByPathDialogVisible = ref(false)
+const deletePathPrefix = ref('')
 
 const imageUrl = (row) => {
   const parts = row.file_path.split('/')
@@ -244,6 +261,32 @@ const handleBatchRemove = async () => {
 const removeTag = async (row, tag) => {
   await batchRemoveLabels({ image_ids: [row.id], label_ids: [tag.id] })
   ElMessage.success('标签移除成功')
+  loadImages()
+}
+
+const handleDeleteSelected = async () => {
+  try {
+    await ElMessageBox.confirm(`确认删除选中的 ${selectedImages.value.length} 张图片？`, '确认删除')
+  } catch { return }
+  await deleteImagesByIds(selectedImages.value.map(i => i.id))
+  ElMessage.success('删除成功')
+  loadDirectories()
+  loadImages()
+}
+
+const handleDeleteByPath = async () => {
+  if (!deletePathPrefix.value) {
+    ElMessage.warning('请输入路径前缀')
+    return
+  }
+  try {
+    await ElMessageBox.confirm(`确认删除路径以 "${deletePathPrefix.value}" 开头的所有图片？`, '确认删除')
+  } catch { return }
+  const res = await deleteImagesByPath(deletePathPrefix.value)
+  ElMessage.success(`已删除 ${res.data.deleted_count} 张图片`)
+  deleteByPathDialogVisible.value = false
+  deletePathPrefix.value = ''
+  loadDirectories()
   loadImages()
 }
 

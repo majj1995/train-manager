@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.schemas.common import PaginatedResponse
-from app.schemas.image import ImageImport, ImageImportResult, ImageOut
+from app.schemas.image import ImageImport, ImageImportResult, ImageOut, ImageDeleteByIds, ImageDeleteByPath, ImageDeleteResult
 from app.schemas.label import LabelOut
-from app.services.image_service import import_images, list_images, get_image_detail
+from app.services.image_service import import_images, list_images, get_image_detail, delete_images_by_ids, delete_images_by_path_prefix
 
 router = APIRouter(prefix="/api/images", tags=["images"])
 
@@ -52,3 +52,15 @@ def api_get_image_detail(image_id: int, db: Session = Depends(get_db)):
         "created_at": image.created_at,
         "labels": label_data,
     }
+
+
+@router.post("/delete-by-ids", response_model=ImageDeleteResult)
+def api_delete_images_by_ids(body: ImageDeleteByIds, db: Session = Depends(get_db)):
+    count = delete_images_by_ids(db, body.image_ids)
+    return ImageDeleteResult(deleted_count=count)
+
+
+@router.post("/delete-by-path", response_model=ImageDeleteResult)
+def api_delete_images_by_path(body: ImageDeleteByPath, db: Session = Depends(get_db)):
+    count = delete_images_by_path_prefix(db, body.path_prefix)
+    return ImageDeleteResult(deleted_count=count)
