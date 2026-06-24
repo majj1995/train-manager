@@ -28,16 +28,16 @@ backend/app/
   core/         # config.py, database.py, security.py
 
 frontend/src/
-  views/        # 4 个页面: Images, Labeling, Preprocess, Corpus
+  views/        # 5 个页面: Images, Labels, Labeling, Preprocess, Corpus
   components/   # ImageGrid.vue (虚拟滚动), LabelPanel.vue (标注对话框)
   api/          # 每个后端模块对应一个 JS 文件
-  router/       # Vue Router (4 routes + redirect)
+  router/       # Vue Router (5 routes + redirect)
   stores/       # Pinia
 ```
 
 ## 核心架构决策
 
-1. **标签驱动模型**（而非任务-图片关联模型）：当前只有单一审核任务，标签体系扁平管理即可。标签属于标签分组（LabelGroup），同一图片在不同分组下可独立标注。
+1. **标签驱动模型**（而非任务-图片关联模型）：标签属于标签分组（LabelGroup），同一图片在不同分组下可独立标注。标签支持不限层级嵌套（parent_id 自引用），分组内形成独立标签树，任意层级标签均可作为标注结果。
 
 2. **图片全局唯一存储**：通过 SHA256 file_hash 唯一约束去重，不重复存储同一图片。
 
@@ -52,7 +52,7 @@ frontend/src/
 ## 数据库模型关系
 
 ```
-SourceDirectory ←→ ImageSourceDirectory ←→ Image ←→ ImageLabel ←→ Label ← LabelGroup
+SourceDirectory ←→ ImageSourceDirectory ←→ Image ←→ ImageLabel ←→ Label(parent_id) ← LabelGroup
                                                 ←→ PreprocessResult ← PreprocessTask(parent_task_id) ← PreprocessScript
                                                 ←→ CorpusRecord ← CorpusTemplate
 User (JWT 认证)
@@ -64,7 +64,7 @@ User (JWT 认证)
 - `/api/auth` — 注册/登录
 - `/api/directories` — 数据源目录管理 (POST 添加, GET 列表, DELETE 删除)
 - `/api/images` — 图片管理 (POST /import, GET 列表, GET/{id} 详情)
-- `/api/labels` — 标签管理 (/groups CRUD, /groups/{id}/labels CRUD, /batch-add, /batch-remove)
+- `/api/labels` — 标签管理 (/groups CRUD, /groups/{id}/labels CRUD, /groups/{id}/tree 标签树, /labels/{id} PUT 更新, /labels/{id} DELETE, /batch-add, /batch-remove)
 - `/api/preprocess` — 预处理 (/scripts CRUD, /tasks CRUD, /tasks/{id}/results, /results/{id} PUT, /tasks/{id}/confirm)
 - `/api/corpus` — 语料 (/templates CRUD, POST /generate, GET /records, PUT /records/{id}, POST /records/confirm, POST /export)
 - `/api/collect` — 数据收集（预留空路由）
@@ -120,6 +120,7 @@ bash frontend/run.sh       # 前端 (端口 5173)
 ## 开发流程规范
 
 - **每次完成功能点修改后自动提交并推送远程仓库**，无需用户额外要求。提交信息简洁描述改动内容。
+- **自主决策原则**：设计和实施过程中，不需要逐步请用户确认每个环节。自己完成设计，选择架构最优、可扩展性最好的方案，然后直接实施。用户只做最终功能验收。遇到重大方向性分歧时才需与用户沟通。
 
 ## 设计文档位置
 
