@@ -17,8 +17,6 @@
       <el-card>
         <template #header>
           <div style="display:flex;gap:12px;align-items:center">
-            <el-button :disabled="selectedImages.length === 0" @click="batchAddDialogVisible = true">批量添加标签</el-button>
-            <el-button :disabled="selectedImages.length === 0" @click="handleBatchRemove">批量移除标签</el-button>
             <el-button :disabled="selectedImages.length === 0" type="danger" @click="handleDeleteSelected">删除选中图片</el-button>
             <el-button type="danger" @click="deleteByPathDialogVisible = true">按路径删除</el-button>
             <el-select v-model="filterGroupId" placeholder="按标签分组筛选" clearable style="width:200px" @change="loadImages">
@@ -38,7 +36,7 @@
           <el-table-column prop="file_path" label="文件路径" min-width="200" />
           <el-table-column label="标签" min-width="200">
             <template #default="{ row }">
-              <el-tag v-for="tag in row.tags" :key="tag.id" closable size="small" @close="removeTag(row, tag)" style="margin-right:4px">{{ tag.name }}</el-tag>
+              <el-tag v-for="tag in row.tags" :key="tag.id" size="small" style="margin-right:4px">{{ tag.name }}</el-tag>
             </template>
           </el-table-column>
         </el-table>
@@ -72,31 +70,6 @@
     <img :src="previewImageUrl" style="max-width:90vw;max-height:80vh;display:block" />
   </el-dialog>
 
-  <el-dialog v-model="batchAddDialogVisible" title="批量添加标签" width="400px">
-    <el-form label-width="80px">
-      <el-form-item label="选择分组">
-        <el-select v-model="batchAddGroupId" placeholder="选择标签分组" @change="loadBatchLabels">
-          <el-option v-for="g in groups" :key="g.id" :label="g.name" :value="g.id" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="选择标签">
-        <el-tree-select
-          v-model="batchAddLabelIds"
-          :data="batchLabelTree"
-          multiple
-          check-strictly
-          :render-after-expand="false"
-          placeholder="选择标签"
-          style="width: 100%"
-        />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <el-button @click="batchAddDialogVisible = false">取消</el-button>
-      <el-button type="primary" @click="handleBatchAdd">添加</el-button>
-    </template>
-  </el-dialog>
-
   <el-dialog v-model="showAddDir" title="添加数据源目录" width="400px">
     <el-form>
       <el-form-item label="目录路径">
@@ -117,7 +90,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listImages, deleteImagesByIds, deleteImagesByPath } from '../api/images'
-import { listGroups, getLabelTree, batchAddLabels, batchRemoveLabels } from '../api/labels'
+import { listGroups } from '../api/labels'
 import { addDirectory, listDirectories, deleteDirectory } from '../api/directories'
 
 const groups = ref([])
@@ -129,11 +102,6 @@ const pageSize = ref(20)
 const total = ref(0)
 const filterGroupId = ref(null)
 const filterDirectoryId = ref(null)
-
-const batchAddDialogVisible = ref(false)
-const batchAddGroupId = ref(null)
-const batchAddLabelIds = ref([])
-const batchLabelTree = ref([])
 
 const directories = ref([])
 const showAddDir = ref(false)
@@ -162,12 +130,6 @@ const loadGroups = async () => {
   groups.value = res.data
 }
 
-const loadBatchLabels = async () => {
-  if (!batchAddGroupId.value) return
-  const res = await getLabelTree(batchAddGroupId.value)
-  batchLabelTree.value = res.data
-}
-
 const loadImages = async () => {
   loading.value = true
   try {
@@ -190,41 +152,6 @@ const filterByDirectory = (d) => {
 
 const onSelectionChange = (val) => {
   selectedImages.value = val
-}
-
-const handleBatchAdd = async () => {
-  await batchAddLabels({ image_ids: selectedImages.value.map(i => i.id), label_ids: batchAddLabelIds.value })
-  ElMessage.success('标签添加成功')
-  batchAddDialogVisible.value = false
-  batchAddLabelIds.value = []
-  loadImages()
-}
-
-const handleBatchRemove = async () => {
-  if (filterGroupId.value === null) {
-    ElMessage.warning('请先选择一个标签分组筛选条件')
-    return
-  }
-  const treeRes = await getLabelTree(filterGroupId.value)
-  const allLabelIds = collectAllLabelIds(treeRes.data)
-  await batchRemoveLabels({ image_ids: selectedImages.value.map(i => i.id), label_ids: allLabelIds })
-  ElMessage.success('标签移除成功')
-  loadImages()
-}
-
-const collectAllLabelIds = (tree) => {
-  const ids = []
-  for (const node of tree) {
-    ids.push(node.id)
-    if (node.children) ids.push(...collectAllLabelIds(node.children))
-  }
-  return ids
-}
-
-const removeTag = async (row, tag) => {
-  await batchRemoveLabels({ image_ids: [row.id], label_ids: [tag.id] })
-  ElMessage.success('标签移除成功')
-  loadImages()
 }
 
 const handleDeleteSelected = async () => {

@@ -15,17 +15,62 @@
         @change="loadImages"
       />
       <el-tag style="margin-left: 12px">共 {{ filteredImages.length }} 张图片</el-tag>
+      <el-button @click="batchAddDialogVisible = true" style="margin-left: 12px">批量添加标签</el-button>
+      <el-button @click="batchRemoveDialogVisible = true" style="margin-left: 4px">批量移除标签</el-button>
     </el-row>
     <ImageGrid :images="filteredImages" @select="onSelectImage" />
     <LabelPanel :image="selectedImage" :labelTree="labelTree" :groupId="groupId" @saved="loadImages" />
   </el-card>
+
+  <el-dialog v-model="batchAddDialogVisible" title="批量添加标签" width="400px">
+    <p style="margin-bottom:12px;color:#666">将对当前筛选范围内的所有图片（共 {{ filteredImages.length }} 张）添加标签</p>
+    <el-form label-width="80px">
+      <el-form-item label="选择标签">
+        <el-tree-select
+          v-model="batchAddLabelIds"
+          :data="labelTree"
+          multiple
+          check-strictly
+          :render-after-expand="false"
+          placeholder="选择标签"
+          style="width: 100%"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="batchAddDialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="handleBatchAdd">添加</el-button>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="batchRemoveDialogVisible" title="批量移除标签" width="400px">
+    <p style="margin-bottom:12px;color:#666">将从当前筛选范围内的所有图片（共 {{ filteredImages.length }} 张）移除标签</p>
+    <el-form label-width="80px">
+      <el-form-item label="选择标签">
+        <el-tree-select
+          v-model="batchRemoveLabelIds"
+          :data="labelTree"
+          multiple
+          check-strictly
+          :render-after-expand="false"
+          placeholder="选择要移除的标签"
+          style="width: 100%"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="batchRemoveDialogVisible = false">取消</el-button>
+      <el-button type="danger" @click="handleBatchRemove">移除</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import ImageGrid from '../components/ImageGrid.vue'
 import LabelPanel from '../components/LabelPanel.vue'
-import { listGroups, getLabelTree } from '../api/labels'
+import { listGroups, getLabelTree, batchAddLabels, batchRemoveLabels } from '../api/labels'
 import { listImages } from '../api/images'
 
 const groups = ref([])
@@ -34,6 +79,10 @@ const labelTree = ref([])
 const allImages = ref([])
 const labelFilterId = ref(null)
 const selectedImage = ref(null)
+const batchAddDialogVisible = ref(false)
+const batchAddLabelIds = ref([])
+const batchRemoveDialogVisible = ref(false)
+const batchRemoveLabelIds = ref([])
 
 const filteredImages = computed(() => {
   if (!labelFilterId.value) return allImages.value
@@ -60,6 +109,22 @@ const loadImages = async () => {
 }
 
 const onSelectImage = (img) => { selectedImage.value = img }
+
+const handleBatchAdd = async () => {
+  await batchAddLabels({ image_ids: filteredImages.value.map(i => i.id), label_ids: batchAddLabelIds.value })
+  ElMessage.success('标签添加成功')
+  batchAddDialogVisible.value = false
+  batchAddLabelIds.value = []
+  loadImages()
+}
+
+const handleBatchRemove = async () => {
+  await batchRemoveLabels({ image_ids: filteredImages.value.map(i => i.id), label_ids: batchRemoveLabelIds.value })
+  ElMessage.success('标签移除成功')
+  batchRemoveDialogVisible.value = false
+  batchRemoveLabelIds.value = []
+  loadImages()
+}
 
 onMounted(async () => {
   const res = await listGroups()
