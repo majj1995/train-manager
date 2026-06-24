@@ -51,7 +51,7 @@ def api_get_label_tree(group_id: int, db: Session = Depends(get_db)):
     return get_label_tree(db, group_id)
 
 
-@router.put("/labels/{label_id}", response_model=LabelOut)
+@router.put("/{label_id}", response_model=LabelOut)
 def api_update_label(label_id: int, body: LabelUpdate, db: Session = Depends(get_db)):
     try:
         return update_label(db, label_id, body)
@@ -59,7 +59,7 @@ def api_update_label(label_id: int, body: LabelUpdate, db: Session = Depends(get
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/labels/{label_id}")
+@router.delete("/{label_id}")
 def api_delete_label(label_id: int, db: Session = Depends(get_db)):
     if not delete_label(db, label_id):
         raise HTTPException(status_code=404, detail="Label not found")
