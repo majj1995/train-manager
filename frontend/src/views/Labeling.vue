@@ -7,12 +7,13 @@
       <el-tree-select
         v-model="labelFilterId"
         :data="labelTree"
+        :props="{ value: 'id', label: 'name', children: 'children' }"
         check-strictly
         :render-after-expand="false"
         clearable
         placeholder="按标签过滤"
         style="width: 200px; margin-left: 12px"
-        @change="loadImages"
+        @change="onLabelFilterChange"
       />
       <el-tag style="margin-left: 12px">共 {{ filteredImages.length }} 张图片</el-tag>
       <el-button @click="batchAddDialogVisible = true" style="margin-left: 12px">批量添加标签</el-button>
@@ -29,6 +30,7 @@
         <el-tree-select
           v-model="batchAddLabelIds"
           :data="labelTree"
+          :props="{ value: 'id', label: 'name', children: 'children' }"
           multiple
           check-strictly
           :render-after-expand="false"
@@ -50,6 +52,7 @@
         <el-tree-select
           v-model="batchRemoveLabelIds"
           :data="labelTree"
+          :props="{ value: 'id', label: 'name', children: 'children' }"
           multiple
           check-strictly
           :render-after-expand="false"
@@ -86,7 +89,7 @@ const batchRemoveLabelIds = ref([])
 
 const filteredImages = computed(() => {
   if (!labelFilterId.value) return allImages.value
-  return allImages.value.filter(img => img.labels && img.labels.some(l => l.id === labelFilterId.value))
+  return allImages.value.filter(img => img.tags && img.tags.some(l => l.id === labelFilterId.value))
 })
 
 const loadData = async () => {
@@ -102,10 +105,15 @@ const loadLabelTree = async () => {
 }
 
 const loadImages = async () => {
-  const params = { page_size: 500, group_id: groupId.value }
+  const params = { page_size: 500 }
+  if (groupId.value) params.group_id = groupId.value
   if (labelFilterId.value) params.label_id = labelFilterId.value
   const res = await listImages(params)
   allImages.value = res.data.items
+}
+
+const onLabelFilterChange = () => {
+  loadImages()
 }
 
 const onSelectImage = (img) => { selectedImage.value = img }

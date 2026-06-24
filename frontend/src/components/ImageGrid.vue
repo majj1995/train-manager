@@ -4,7 +4,7 @@
       <div v-for="item in visibleItems" :key="item.id" class="grid-item" :style="{ transform: `translateY(${item.top}px)` }" @click="$emit('select', item)">
         <el-image :src="imageUrl(item.file_path)" fit="cover" lazy style="width: 100%; height: 150px" />
         <div class="tags-row">
-          <el-tag v-for="l in item.labels" :key="l.id" :color="l.color" size="small">{{ l.name }}</el-tag>
+          <el-tag v-for="l in (item.tags || item.labels || [])" :key="l.id" :color="l.color" size="small">{{ l.name }}</el-tag>
         </div>
       </div>
     </div>

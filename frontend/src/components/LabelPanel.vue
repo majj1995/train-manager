@@ -45,7 +45,8 @@ const imageUrl = computed(() => props.image ? `${import.meta.env.VITE_API_BASE_U
 
 watch(() => props.image, (img) => {
   if (img) {
-    selectedLabelIds.value = img.labels
+    const imageLabels = img.tags || img.labels || []
+    selectedLabelIds.value = imageLabels
       .filter(l => l.group_id === props.groupId)
       .map(l => l.id)
     checkedLabelIds.value = [...selectedLabelIds.value]
