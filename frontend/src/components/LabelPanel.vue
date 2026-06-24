@@ -4,11 +4,21 @@
       <el-image :src="imageUrl" fit="contain" style="max-height: 300px" />
     </div>
     <el-divider>标签标注</el-divider>
-    <el-checkbox-group v-model="selectedLabelIds">
-      <el-checkbox v-for="label in groupLabels" :key="label.id" :label="label.id">
-        <el-tag :color="label.color" size="small">{{ label.name }}</el-tag>
-      </el-checkbox>
-    </el-checkbox-group>
+    <el-tree
+      :data="labelTree"
+      node-key="id"
+      show-checkbox
+      check-strictly
+      :default-checked-keys="selectedLabelIds"
+      :props="{ children: 'children', label: 'name' }"
+      @check="onCheck"
+    >
+      <template #default="{ node, data }">
+        <span style="display:flex;align-items:center">
+          <span :style="{ color: data.color || '#409EFF' }">{{ data.name }}</span>
+        </span>
+      </template>
+    </el-tree>
     <template #footer>
       <el-button @click="visible = false">取消</el-button>
       <el-button type="primary" @click="saveLabels">保存</el-button>
@@ -23,13 +33,14 @@ import { batchAddLabels, batchRemoveLabels } from '../api/labels'
 
 const props = defineProps({
   image: Object,
-  groupLabels: Array,
+  labelTree: Array,
   groupId: Number,
 })
 const emit = defineEmits(['saved'])
 
 const visible = ref(false)
 const selectedLabelIds = ref([])
+const checkedLabelIds = ref([])
 const imageUrl = computed(() => props.image ? `${import.meta.env.VITE_API_BASE_URL || ''}/images/${props.image.file_path.split('/').pop()}` : '')
 
 watch(() => props.image, (img) => {
@@ -37,14 +48,27 @@ watch(() => props.image, (img) => {
     selectedLabelIds.value = img.labels
       .filter(l => l.group_id === props.groupId)
       .map(l => l.id)
+    checkedLabelIds.value = [...selectedLabelIds.value]
     visible.value = true
   }
 })
 
+const onCheck = (data, checkedInfo) => {
+  checkedLabelIds.value = checkedInfo.checkedKeys
+}
+
+const collectAllIds = (tree) => {
+  const ids = []
+  for (const node of tree) {
+    ids.push(node.id)
+    if (node.children) ids.push(...collectAllIds(node.children))
+  }
+  return ids
+}
+
 const saveLabels = async () => {
-  const existingIds = props.image.labels.filter(l => l.group_id === props.groupId).map(l => l.id)
-  const toAdd = selectedLabelIds.value.filter(id => !existingIds.includes(id))
-  const toRemove = existingIds.filter(id => !selectedLabelIds.value.includes(id))
+  const toAdd = checkedLabelIds.value.filter(id => !selectedLabelIds.value.includes(id))
+  const toRemove = selectedLabelIds.value.filter(id => !checkedLabelIds.value.includes(id))
 
   if (toAdd.length) await batchAddLabels({ image_ids: [props.image.id], label_ids: toAdd })
   if (toRemove.length) await batchRemoveLabels({ image_ids: [props.image.id], label_ids: toRemove })

@@ -4,12 +4,12 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.schemas.label import (
     LabelGroupCreate, LabelGroupOut,
-    LabelCreate, LabelOut,
+    LabelCreate, LabelOut, LabelUpdate, LabelTreeNode,
     BatchLabelCreate, BatchLabelDelete,
 )
 from app.services.label_service import (
     create_group, list_groups, delete_group,
-    create_label, list_labels, delete_label,
+    create_label, update_label, list_labels, get_label_tree, delete_label,
     batch_add_labels, batch_remove_labels,
 )
 
@@ -35,13 +35,28 @@ def api_delete_group(group_id: int, db: Session = Depends(get_db)):
 
 @router.post("/groups/{group_id}/labels", response_model=LabelOut)
 def api_create_label(group_id: int, body: LabelCreate, db: Session = Depends(get_db)):
-    body.group_id = group_id
-    return create_label(db, body)
+    try:
+        return create_label(db, group_id, body)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/groups/{group_id}/labels", response_model=list[LabelOut])
 def api_list_labels(group_id: int, db: Session = Depends(get_db)):
     return list_labels(db, group_id)
+
+
+@router.get("/groups/{group_id}/tree", response_model=list[LabelTreeNode])
+def api_get_label_tree(group_id: int, db: Session = Depends(get_db)):
+    return get_label_tree(db, group_id)
+
+
+@router.put("/labels/{label_id}", response_model=LabelOut)
+def api_update_label(label_id: int, body: LabelUpdate, db: Session = Depends(get_db)):
+    try:
+        return update_label(db, label_id, body)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.delete("/labels/{label_id}")

@@ -21,7 +21,14 @@ class LabelCreate(BaseModel):
     name: str
     description: str | None = None
     color: str | None = "#409EFF"
-    group_id: int
+    parent_id: int | None = None
+
+
+class LabelUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    color: str | None = None
+    parent_id: int | None = None
 
 
 class LabelOut(BaseModel):
@@ -32,7 +39,20 @@ class LabelOut(BaseModel):
     description: str | None
     color: str | None
     group_id: int
+    parent_id: int | None
     created_at: datetime
+
+
+class LabelTreeNode(BaseModel):
+    id: int
+    name: str
+    description: str | None
+    color: str | None
+    group_id: int
+    parent_id: int | None
+    children: list["LabelTreeNode"] = []
+
+    model_config = {"from_attributes": True}
 
 
 class ImageLabelCreate(BaseModel):
@@ -55,11 +75,11 @@ class ImageLabelOut(BaseModel):
 
 class BatchLabelCreate(BaseModel):
     image_ids: list[int]
-    label_id: int
+    label_ids: list[int]
     source: str = "manual"
     confidence: float = 1.0
 
 
 class BatchLabelDelete(BaseModel):
     image_ids: list[int]
-    label_id: int
+    label_ids: list[int]

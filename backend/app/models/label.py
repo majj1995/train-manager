@@ -27,11 +27,14 @@ class Label(Base):
     description: Mapped[str | None] = mapped_column(String(500), nullable=True)
     color: Mapped[str | None] = mapped_column(String(20), nullable=True, default="#409EFF")
     group_id: Mapped[int] = mapped_column(Integer, ForeignKey("label_groups.id"), nullable=False)
+    parent_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("labels.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
 
     group: Mapped["LabelGroup"] = relationship(back_populates="labels")
+    parent: Mapped["Label | None"] = relationship(remote_side=[id], back_populates="children")
+    children: Mapped[list["Label"]] = relationship(back_populates="parent")
     image_labels: Mapped[list["ImageLabel"]] = relationship(back_populates="label")
 
 

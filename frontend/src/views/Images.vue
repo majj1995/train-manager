@@ -11,22 +11,6 @@
           <el-button size="small" type="danger" @click.stop="doDeleteDir(d)">删除</el-button>
         </div>
       </el-card>
-
-      <el-card>
-        <template #header>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span>标签分组</span>
-            <el-button size="small" type="primary" @click="groupDialogVisible = true">新建分组</el-button>
-          </div>
-        </template>
-        <el-tree
-          :data="groupTree"
-          node-key="id"
-          highlight-current
-          default-expand-all
-          @node-click="onNodeClick"
-        />
-      </el-card>
     </el-col>
 
     <el-col :span="20">
@@ -88,21 +72,6 @@
     <img :src="previewImageUrl" style="max-width:90vw;max-height:80vh;display:block" />
   </el-dialog>
 
-  <el-dialog v-model="groupDialogVisible" title="新建标签分组" width="400px">
-    <el-form label-width="80px">
-      <el-form-item label="名称">
-        <el-input v-model="newGroupName" />
-      </el-form-item>
-      <el-form-item label="描述">
-        <el-input v-model="newGroupDesc" type="textarea" />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <el-button @click="groupDialogVisible = false">取消</el-button>
-      <el-button type="primary" @click="handleCreateGroup">创建</el-button>
-    </template>
-  </el-dialog>
-
   <el-dialog v-model="batchAddDialogVisible" title="批量添加标签" width="400px">
     <el-form label-width="80px">
       <el-form-item label="选择分组">
@@ -111,9 +80,15 @@
         </el-select>
       </el-form-item>
       <el-form-item label="选择标签">
-        <el-select v-model="batchAddLabelIds" multiple placeholder="选择标签">
-          <el-option v-for="l in batchLabels" :key="l.id" :label="l.name" :value="l.id" />
-        </el-select>
+        <el-tree-select
+          v-model="batchAddLabelIds"
+          :data="batchLabelTree"
+          multiple
+          check-strictly
+          :render-after-expand="false"
+          placeholder="选择标签"
+          style="width: 100%"
+        />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -142,11 +117,10 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listImages, deleteImagesByIds, deleteImagesByPath } from '../api/images'
-import { listGroups, createGroup, listLabelsByGroup, batchAddLabels, batchRemoveLabels } from '../api/labels'
+import { listGroups, getLabelTree, batchAddLabels, batchRemoveLabels } from '../api/labels'
 import { addDirectory, listDirectories, deleteDirectory } from '../api/directories'
 
 const groups = ref([])
-const groupTree = ref([])
 const images = ref([])
 const selectedImages = ref([])
 const loading = ref(false)
@@ -154,17 +128,12 @@ const page = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
 const filterGroupId = ref(null)
-const currentGroupId = ref(null)
 const filterDirectoryId = ref(null)
-
-const groupDialogVisible = ref(false)
-const newGroupName = ref('')
-const newGroupDesc = ref('')
 
 const batchAddDialogVisible = ref(false)
 const batchAddGroupId = ref(null)
 const batchAddLabelIds = ref([])
-const batchLabels = ref([])
+const batchLabelTree = ref([])
 
 const directories = ref([])
 const showAddDir = ref(false)
@@ -191,25 +160,12 @@ const previewImage = (row) => {
 const loadGroups = async () => {
   const res = await listGroups()
   groups.value = res.data
-  buildTree()
 }
 
-const buildTree = async () => {
-  const tree = []
-  for (const g of groups.value) {
-    const labelsRes = await listLabelsByGroup(g.id)
-    const children = labelsRes.data.map(l => ({ id: `label-${l.id}`, label: l.name, isLabel: true, labelId: l.id, groupId: g.id }))
-    tree.push({ id: `group-${g.id}`, label: g.name, children })
-  }
-  groupTree.value = tree
-}
-
-const onNodeClick = (node) => {
-  if (node.isLabel) return
-  const gId = node.id.replace('group-', '')
-  currentGroupId.value = Number(gId)
-  filterGroupId.value = Number(gId)
-  loadImages()
+const loadBatchLabels = async () => {
+  if (!batchAddGroupId.value) return
+  const res = await getLabelTree(batchAddGroupId.value)
+  batchLabelTree.value = res.data
 }
 
 const loadImages = async () => {
@@ -222,7 +178,8 @@ const loadImages = async () => {
     images.value = res.data.items || res.data
     total.value = res.data.total || images.value.length
   } finally {
-    loading.value = false }
+    loading.value = false
+  }
 }
 
 const filterByDirectory = (d) => {
@@ -235,20 +192,6 @@ const onSelectionChange = (val) => {
   selectedImages.value = val
 }
 
-const handleCreateGroup = async () => {
-  await createGroup({ name: newGroupName.value, description: newGroupDesc.value })
-  ElMessage.success('分组创建成功')
-  groupDialogVisible.value = false
-  newGroupName.value = ''
-  newGroupDesc.value = ''
-  loadGroups()
-}
-
-const loadBatchLabels = async () => {
-  const res = await listLabelsByGroup(batchAddGroupId.value)
-  batchLabels.value = res.data
-}
-
 const handleBatchAdd = async () => {
   await batchAddLabels({ image_ids: selectedImages.value.map(i => i.id), label_ids: batchAddLabelIds.value })
   ElMessage.success('标签添加成功')
@@ -258,16 +201,24 @@ const handleBatchAdd = async () => {
 }
 
 const handleBatchRemove = async () => {
-  if (batchAddGroupId.value === null && filterGroupId.value === null) {
-    ElMessage.warning('请先选择一个标签分组')
+  if (filterGroupId.value === null) {
+    ElMessage.warning('请先选择一个标签分组筛选条件')
     return
   }
-  const groupId = batchAddGroupId.value || filterGroupId.value
-  const labelsRes = await listLabelsByGroup(groupId)
-  const labelIds = labelsRes.data.map(l => l.id)
-  await batchRemoveLabels({ image_ids: selectedImages.value.map(i => i.id), label_ids: labelIds })
+  const treeRes = await getLabelTree(filterGroupId.value)
+  const allLabelIds = collectAllLabelIds(treeRes.data)
+  await batchRemoveLabels({ image_ids: selectedImages.value.map(i => i.id), label_ids: allLabelIds })
   ElMessage.success('标签移除成功')
   loadImages()
+}
+
+const collectAllLabelIds = (tree) => {
+  const ids = []
+  for (const node of tree) {
+    ids.push(node.id)
+    if (node.children) ids.push(...collectAllLabelIds(node.children))
+  }
+  return ids
 }
 
 const removeTag = async (row, tag) => {
